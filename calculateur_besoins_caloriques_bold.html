@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur de Besoins Caloriques</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #FF8C00;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background-color: #FF8C00;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #FF7000;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            text-align: left;
+            border: 2px solid #ddd;
+        }
+
+        .result h2 {
+            text-align: center;
+            color: #FF8C00;
+        }
+
+        .result .block {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .bmr-block {
+            background-color: #d9f9d9;
+            border: 1px solid #a3d9a3;
+        }
+
+        .maintain-block {
+            background-color: #fdf6d9;
+            border: 1px solid #f5dba3;
+        }
+
+        .weight-loss-block {
+            background-color: #fde4e4;
+            border: 1px solid #f5a3a3;
+        }
+
+        .weight-gain-block {
+            background-color: #d9e4fd;
+            border: 1px solid #a3a3f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculateur de Besoins Caloriques</h1>
+        <form id="calorie-form">
+            <label for="gender">Sexe :</label>
+            <select id="gender" required>
+                <option value="female">Femme</option>
+                <option value="male">Homme</option>
+            </select>
+
+            <label for="weight">Poids (kg) :</label>
+            <input type="number" id="weight" placeholder="Entrez votre poids" required>
+
+            <label for="height">Taille (cm) :</label>
+            <input type="number" id="height" placeholder="Entrez votre taille" required>
+
+            <label for="age">Âge :</label>
+            <input type="number" id="age" placeholder="Entrez votre âge" required>
+
+            <label for="activity">Niveau d'activité :</label>
+            <select id="activity" required>
+                <option value="1.2">🪑 Sédentaire : Activité physique très faible</option>
+                <option value="1.375">🚶 Peu actif : Marcher un peu (5 000 à 7 000 pas/jour)</option>
+                <option value="1.55">🏋️ Modérément actif : Travail debout ou sport 3-5 fois/semaine</option>
+                <option value="1.725">💪 Très actif : Vie dynamique + sport intense 6-7 jours/semaine</option>
+                <option value="1.9">🔥 Extrêmement actif : Sport de haut niveau</option>
+            </select>
+
+            <button type="button" onclick="calculateCalories()">Calculer</button>
+        </form>
+        <div id="result" class="result" style="display:none;">
+            <h2>Vos Résultats</h2>
+
+            <div class="block bmr-block">
+                <strong>Métabolisme de base (BMR) :</strong>
+                <p id="bmr"></p>
+                <p><em><strong>Le BMR</strong> correspond aux calories nécessaires pour <strong>maintenir vos fonctions vitales</strong> (respirer, dormir, etc.). Ce n'est <strong>pas une base</strong> pour vos apports alimentaires.</em></p>
+            </div>
+
+            <div class="block maintain-block">
+                <strong>Maintien Calorique :</strong>
+                <p id="maintenance"></p>
+                <p><em><strong>Maintien calorique</strong> : calories à consommer pour <strong>maintenir votre poids actuel</strong>.</em></p>
+            </div>
+
+            <div class="block weight-loss-block">
+                <strong>Perte de Poids :</strong>
+                <p id="weightLoss200"></p>
+                <p><em><strong>Réduction modérée (-200 kcal)</strong> : plus facile à réaliser mais progression plus lente.</em></p>
+                <p id="weightLoss500"></p>
+                <p><em><strong>Réduction intense (-500 kcal)</strong> : plus rapide mais nécessite rigueur pour éviter les frustrations.</em></p>
+            </div>
+
+            <div class="block weight-gain-block">
+                <strong>Prise de Poids :</strong>
+                <p id="weightGain200"></p>
+                <p><em><strong>Augmentation modérée (+200 kcal)</strong> : prise progressive, idéal pour maîtriser.</em></p>
+                <p id="weightGain500"></p>
+                <p><em><strong>Augmentation intense (+500 kcal)</strong> : résultats rapides mais à surveiller.</em></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateCalories() {
+            const gender = document.getElementById("gender").value;
+            const weight = parseFloat(document.getElementById("weight").value);
+            const height = parseFloat(document.getElementById("height").value);
+            const age = parseInt(document.getElementById("age").value);
+            const activity = parseFloat(document.getElementById("activity").value);
+
+            let bmr;
+            if (gender === "male") {
+                bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+            } else {
+                bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+            }
+
+            const maintenanceCalories = Math.round(bmr * activity);
+            const weightLossCalories200 = Math.round(maintenanceCalories - 200);
+            const weightLossCalories500 = Math.round(maintenanceCalories - 500);
+            const weightGainCalories200 = Math.round(maintenanceCalories + 200);
+            const weightGainCalories500 = Math.round(maintenanceCalories + 500);
+
+            document.getElementById("bmr").textContent = `${Math.round(bmr)} kcal`;
+            document.getElementById("maintenance").textContent = `${maintenanceCalories} kcal`;
+            document.getElementById("weightLoss200").textContent = `Réduction de 200 kcal : ${weightLossCalories200} kcal`;
+            document.getElementById("weightLoss500").textContent = `Réduction de 500 kcal : ${weightLossCalories500} kcal`;
+            document.getElementById("weightGain200").textContent = `Augmentation de 200 kcal : ${weightGainCalories200} kcal`;
+            document.getElementById("weightGain500").textContent = `Augmentation de 500 kcal : ${weightGainCalories500} kcal`;
+
+            document.getElementById("result").style.display = "block";
+        }
+    </script>
+</body>
+</html>
